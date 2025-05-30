@@ -4,14 +4,17 @@ import {
 	formatPaths,
 	parse,
 } from '@conform-to/dom';
-import type { ZodType } from 'zod/v4';
-import type {
-	$ZodIssue,
-	$ZodError,
-	$ZodErrorMap,
-	output,
-	input,
-	util,
+
+import {
+	type $ZodIssue,
+	type $ZodError,
+	type $ZodErrorMap,
+	type output,
+	type input,
+	type util,
+	type $ZodType,
+	safeParse,
+	safeParseAsync,
 } from 'zod/v4/core';
 import { coerceFormValue } from './coercion';
 
@@ -64,7 +67,7 @@ function getError<FormError>(
 	);
 }
 
-export function parseWithZod<Schema extends ZodType>(
+export function parseWithZod<Schema extends $ZodType>(
 	payload: FormData | URLSearchParams,
 	options: {
 		schema: Schema | ((intent: Intent | null) => Schema);
@@ -73,7 +76,7 @@ export function parseWithZod<Schema extends ZodType>(
 		disableAutoCoercion?: boolean;
 	},
 ): Submission<input<Schema>, string[], output<Schema>>;
-export function parseWithZod<Schema extends ZodType, FormError>(
+export function parseWithZod<Schema extends $ZodType, FormError>(
 	payload: FormData | URLSearchParams,
 	options: {
 		schema: Schema | ((intent: Intent | null) => Schema);
@@ -83,7 +86,7 @@ export function parseWithZod<Schema extends ZodType, FormError>(
 		disableAutoCoercion?: boolean;
 	},
 ): Submission<input<Schema>, FormError, output<Schema>>;
-export function parseWithZod<Schema extends ZodType>(
+export function parseWithZod<Schema extends $ZodType>(
 	payload: FormData | URLSearchParams,
 	options: {
 		schema: Schema | ((intent: Intent | null) => Schema);
@@ -92,7 +95,7 @@ export function parseWithZod<Schema extends ZodType>(
 		disableAutoCoercion?: boolean;
 	},
 ): Promise<Submission<input<Schema>, string[], output<Schema>>>;
-export function parseWithZod<Schema extends ZodType, FormError>(
+export function parseWithZod<Schema extends $ZodType, FormError>(
 	payload: FormData | URLSearchParams,
 	options: {
 		schema: Schema | ((intent: Intent | null) => Schema);
@@ -102,7 +105,7 @@ export function parseWithZod<Schema extends ZodType, FormError>(
 		disableAutoCoercion?: boolean;
 	},
 ): Promise<Submission<input<Schema>, FormError, output<Schema>>>;
-export function parseWithZod<Schema extends ZodType, FormError>(
+export function parseWithZod<Schema extends $ZodType, FormError>(
 	payload: FormData | URLSearchParams,
 	options: {
 		schema: Schema | ((intent: Intent | null) => Schema);
@@ -141,10 +144,10 @@ export function parseWithZod<Schema extends ZodType, FormError>(
 			};
 
 			return options.async
-				? schema
-						.safeParseAsync(payload, { error })
-						.then((result) => resolveSubmission(result))
-				: resolveSubmission(schema.safeParse(payload, { error }));
+				? safeParseAsync(schema, payload, { error }).then((result) =>
+						resolveSubmission(result),
+					)
+				: resolveSubmission(safeParse(schema, payload, { error }));
 		},
 	});
 }
